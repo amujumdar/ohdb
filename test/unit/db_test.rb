@@ -3,9 +3,9 @@ require File.dirname(__FILE__) + '/../test_helper'
 module Ohdb
 	class DbTest < Ohdb::Test
 
-		def test_connect_and_migrate
+		def test_basic_db_sanity
 			with_temp_db do |db|
-				assert FileTest.exist?(db.filename)
+				assert Commit.table_exists?
 			end
 		end
 

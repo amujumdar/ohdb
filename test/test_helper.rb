@@ -18,7 +18,7 @@ module Ohdb
 		end
 
 		def with_temp_db
-			db = Database.new(Tempfile.new('test').path)
+			db = Database.new(":memory:")
 			db.migrate
 			yield db
 		end

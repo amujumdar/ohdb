@@ -7,11 +7,12 @@ module Ohdb
 		end
 
 		def dbconfig
-			{:adapter => 'sqlite3', :database => filename}
+			{:adapter => 'sqlite3', :dbfile => filename}
 		end
 
 		def establish_connection
 			ActiveRecord::Base.establish_connection(dbconfig) unless ActiveRecord::Base.connected?
+			ActiveRecord::Base.default_timezone = :utc
 		end
 
 		def migrate(version=nil)
