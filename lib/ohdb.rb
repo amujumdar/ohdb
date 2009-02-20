@@ -9,6 +9,9 @@ require 'scm'
 require 'sqlite3'
 require 'activerecord'
 
+require File.join(OHDB_ROOT, 'vendor/plugins/acts_as_list/init')
+
 require File.join(OHDB_ROOT, 'lib/ohdb/database')
 require File.join(OHDB_ROOT, 'lib/ohdb/migration')
 require File.join(OHDB_ROOT, 'lib/ohdb/commit')
+require File.join(OHDB_ROOT, 'lib/ohdb/import')

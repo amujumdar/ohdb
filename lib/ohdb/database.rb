@@ -3,6 +3,9 @@ module Ohdb
 		attr_accessor :filename
 
 		def initialize(filename = File.join(OHDB_ROOT, "db/#{OHDB_ENV}.sqlite3"))
+			# We remove any existing connection. This prevents re-using any
+			# database we might already be connected to.
+			ActiveRecord::Base.remove_connection
 			@filename = filename
 		end
 

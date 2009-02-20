@@ -8,6 +8,8 @@ unless defined?(TEST_DIR)
 end
 require TEST_DIR + '/../lib/ohdb'
 
+require File.join(TEST_DIR, 'mock_scm')
+
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(OHDB_ROOT, 'log/test.log'), 'a'))
 
 module Ohdb

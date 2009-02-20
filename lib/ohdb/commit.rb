@@ -1,5 +1,6 @@
 module Ohdb
 	class Commit < ActiveRecord::Base
+		acts_as_list
 
 		# Given an Scm::Commit, build a new Ohdb::Commit object
 		def self.from_scm(scm_commit)

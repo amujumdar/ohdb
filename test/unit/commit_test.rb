@@ -14,10 +14,11 @@ module Ohdb
 				db_commit.save!
 				db_commit.reload
 
-				assert_equal db_commit.token, scm_commit.token.to_s
-				assert_equal db_commit.name, scm_commit.author_name
-				assert_equal db_commit.date, scm_commit.author_date
-				assert_equal db_commit.message_head, "First line"
+				assert_equal scm_commit.token.to_s, db_commit.token
+				assert_equal scm_commit.author_name, db_commit.name
+				assert_equal scm_commit.author_date, db_commit.date
+				assert_equal "First line", db_commit.message_head
+				assert_equal 1, db_commit.position
 			end
 		end
 
