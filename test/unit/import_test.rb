@@ -22,6 +22,7 @@ module Ohdb
 				#
 				scm = MockScm.new(:commits => [Scm::Commit.new(:token => 1)])
 				import = Import.new.run(scm)
+				import = Import.find(import.id) # A very brute-force reload, since reload doesn't clear everything
 				assert_equal "OK", import.status
 				assert_equal Commit.find_by_token(1), import.head
 				assert_equal [nil], scm.commit_requests
@@ -32,6 +33,7 @@ module Ohdb
 				#
 				scm = MockScm.new(:commits => [Scm::Commit.new(:token => 1), Scm::Commit.new(:token => 2)])
 				import = Import.new.run(scm)
+				import = Import.find(import.id) # A very brute-force reload, since reload doesn't clear everything
 				assert_equal "OK", import.status
 				assert_equal Commit.find_by_token(2), import.head
 				assert_equal 2, Commit.count
@@ -44,6 +46,7 @@ module Ohdb
 				#
 				scm = MockScm.new(:commits => [Scm::Commit.new(:token => 1), Scm::Commit.new(:token => 2)])
 				import = Import.new.run(scm)
+				import = Import.find(import.id) # A very brute-force reload, since reload doesn't clear everything
 				assert_equal "OK", import.status
 				assert_equal Commit.find_by_token(2), import.head
 				assert_equal 2, Commit.count

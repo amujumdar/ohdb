@@ -20,9 +20,8 @@ module Ohdb
 		end
 
 		def with_temp_db
-			db = Database.new(":memory:")
-			db.migrate
-			yield db
+			Database.create(":memory:")
+			yield
 		end
 	end
 end

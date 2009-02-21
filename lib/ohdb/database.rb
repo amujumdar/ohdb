@@ -1,25 +1,25 @@
 module Ohdb
 	class Database
-		attr_accessor :filename
 
-		def initialize(filename = File.join(OHDB_ROOT, "db/#{OHDB_ENV}.sqlite3"))
-			# We remove any existing connection. This prevents re-using any
-			# database we might already be connected to.
-			ActiveRecord::Base.remove_connection
-			@filename = filename
+		def self.create(filename)
+			establish_connection(filename)
+			migrate
 		end
 
-		def dbconfig
+		def self.dbconfig(filename)
 			{:adapter => 'sqlite3', :dbfile => filename}
 		end
 
-		def establish_connection
-			ActiveRecord::Base.establish_connection(dbconfig) unless ActiveRecord::Base.connected?
+		def self.establish_connection(filename)
+			# We remove any existing connection. This prevents re-using any
+			# database we might already be connected to.
+			ActiveRecord::Base.remove_connection
+
+			ActiveRecord::Base.establish_connection(dbconfig(filename))
 			ActiveRecord::Base.default_timezone = :utc
 		end
 
-		def migrate(version=nil)
-			establish_connection
+		def self.migrate(version=nil)
 			ActiveRecord::Migrator.migrate(File.join(OHDB_ROOT, 'db/migrate'), version)
 		end
 	end

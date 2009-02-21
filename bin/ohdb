@@ -1,0 +1,170 @@
+#!/usr/bin/env ruby
+# == Synopsis
+#   Creates a SQLite3 database file containing source code statistics for every
+#   commit in a source control repository.
+#
+#   If the database file already exists, the database file will be updated to
+#   contain any new commits created since the last run.
+#
+#   The source control repository must be stored on the local disk. Ohdb does
+#   not work with network source control servers.
+#
+#   Ohdb is highly disk- and cpu-intensive, and it can take several hours to
+#   process large repositories. Progress is saved incrementally, however, so it
+#   can be interrupted and restarted with minimal lost work.
+#
+# == Examples
+#   Analyze all commits in repository ~/projects/foo, and place the results
+#   in database foo.sqlite3:
+#
+#       ohdb -o foo.sqlite3 ~/projects/foo
+#
+#   Analyze the repository rooted at the current directory, and place
+#   the results in a database with default name .ohloh/commits.sqlite3
+#
+#       ohdb
+#
+# == Usage
+#   ohdb [options] [path]
+#
+#   You may pass a local path to a git, hg, or svn repository.  If no path is
+#   provided, the current working directory will be used.
+#
+#   For help use: ohdb --help
+#
+# == Options
+#
+#   -o, --output <path>   Specify the filename for the commit database.
+#                         If the target directory does not exist, it will be created.
+#
+#                         By default, The database is stored in a hidden
+#                         directory to prevent detection by the surrounding
+#                         source control system.
+#
+#                         A directory named ".ohloh" will be created, and the
+#                         the database will be stored within this directory
+#                         with name "commits.sqlite3".
+#
+#                         For example, if a Git repository is stored at
+#                              ~/project/.git/
+#                         then the database file will be created at
+#                              ~/project/.ohloh/commits.sqlite3.
+#
+#   -b, --branch <name>   Process the specified branch. Only commits that are
+#                         ancestors of this branch will appear in the database.
+#
+#   -V, --verbose         Verbose output
+#   -q, --quiet           Output as little as possible. Overrides verbose.
+#   -?, -h, --help        Displays this help message
+
+require 'optparse'
+require 'rdoc/usage'
+require 'ostruct'
+
+require File.join(File.dirname(__FILE__), '../lib/ohdb')
+
+class App
+	attr_accessor :options
+
+	def initialize(args, io)
+		@io = io
+		@args = args
+	end
+
+  # Parse options, check arguments, then process the command
+  def run
+		parse_options(@args)
+		process_command
+  end
+
+  protected
+
+    def parse_options(args)
+			@options = OpenStruct.new
+			OptionParser.new do |opts|
+
+				opts.on('-b BRANCH', '--branch BRANCH')    { |b| @options.branch_name = b }
+				opts.on('-o OUTPUT', '--output OUTPUT')    { |o| @options.output = o }
+
+				opts.on('-V', '--verbose')     { @options.verbose = true }
+				opts.on('-q', '--quiet')       { @options.quiet = true }
+				opts.on('-?', '-h', '--help')  { output_help }
+
+				opts.parse!(args) rescue output_usage
+			end
+
+			@options.path = File.expand_path(args.pop || Dir.pwd)
+			@options.output ||= File.join(@options.path, ".ohloh/commits.sqlite3")
+
+			@options.verbose = false if @options.quiet
+    end
+
+		def output_options
+			puts "Options:\n"
+
+			options.marshal_dump.each do |name, val|
+				puts "  #{name} = #{val}"
+			end
+		end
+
+		def output_help
+			output_version
+			RDoc::usage()
+		end
+
+		def output_usage
+			RDoc::usage(1, 'usage')
+		end
+
+		def process_command
+			scm # Make sure the scm exists before doing anything else
+
+			FileUtils.mkdir_p(File.dirname(@options.output)) unless FileTest.directory?(File.dirname(@options.output))
+			ActiveRecord::Base.logger = Logger.new(File.open(@options.output + ".log", 'a'))
+			Scm::Adapters::AbstractAdapter.logger = ActiveRecord::Base.logger
+
+			unless FileTest.exist?(@options.output) || options.quiet
+				puts "Creating database #{@options.output}"
+			end
+			Ohdb::Database.create(@options.output)
+
+			last_import = Ohdb::Import.first(:order => "updated_at DESC", :conditions => "status='OK'")
+
+			if last_import && last_import.head && last_import.head.token == scm.head_token
+				puts "Already up-to-date." unless @options.quiet
+			else
+				puts "Last successful update: #{last_import.updated_at.local}" if last_import && options.verbose
+				count = 0
+				import = Ohdb::Import.new.run(scm) do |commit|
+					puts commit.token	if @options.verbose
+					count += 1
+				end
+				if import.status == "OK"
+					puts "Successfully added #{count} new commit(s)." unless options.quiet
+				else
+					STDERR.puts "#{import.status}: #{import.message}"
+					exit 1
+				end
+			end
+		end
+
+		def scm
+			return @scm if @scm
+
+			@scm = Scm::Adapters::Factory.from_path(options.path)
+			unless @scm
+				STDERR.puts "Could not find a source control repository at path '#{options.path}'"
+				exit 1
+			end
+			unless @scm.exists?
+				STDERR.puts "No #{@scm.english_name} repository at path '#{options.path}'"
+				exit 1
+			end
+
+			@scm
+		end
+end
+
+# Create and run the application
+app = App.new(ARGV, STDIN)
+app.run
