@@ -4,10 +4,15 @@ module Ohdb
 
 		# Given an Scm::Commit, build a new Ohdb::Commit object
 		def self.from_scm(scm_commit)
-			self.new(:token => scm_commit.token,
-							 :name => scm_commit.author_name || scm_commit.committer_name,
-							 :date => scm_commit.author_date || scm_commit.committer_date,
-							 :message_head => first_line(scm_commit.message))
+			new.copy_from_scm(scm_commit)
+		end
+
+		def copy_from_scm(scm_commit)
+			self.token = scm_commit.token
+			self.name = scm_commit.author_name || scm_commit.committer_name
+			self.date = scm_commit.author_date || scm_commit.committer_date
+			self.message_head = Commit.first_line(scm_commit.message)
+			self
 		end
 
 		def self.first_line(s)

@@ -53,6 +53,10 @@
 #   -b, --branch <name>   Process the specified branch. Only commits that are
 #                         ancestors of this branch will appear in the database.
 #
+#                         Do not mix and match branches within a single database!
+#                         If you want statistics for multiple branches, you
+#                         must build a separate database for each branch.
+#
 #   -V, --verbose         Verbose output
 #   -q, --quiet           Output as little as possible. Overrides verbose.
 #   -?, -h, --help        Displays this help message
