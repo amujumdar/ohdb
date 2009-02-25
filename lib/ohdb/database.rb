@@ -17,6 +17,7 @@ module Ohdb
 
 			ActiveRecord::Base.establish_connection(dbconfig(filename))
 			ActiveRecord::Base.default_timezone = :utc
+			self
 		end
 
 		def self.migrate(version=nil)

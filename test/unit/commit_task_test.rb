@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../test_helper'
 
 module Ohdb
-	class CommitTest < Ohdb::Test
+	class CommitTaskTaskTest < Ohdb::Test
 
 		def test_import
 			with_temp_db do
@@ -10,7 +10,7 @@ module Ohdb
 				# Empty case. Nothing to do, should succeed.
 				#
 				scm = MockScm.new
-				import = Import.new.run(scm)
+				import = CommitTask.new.run(scm)
 				assert_equal "OK", import.status
 				assert_equal nil, import.head
 				assert_equal nil, import.message
@@ -21,8 +21,8 @@ module Ohdb
 				# A single new commit. Insert the commit and update the head pointer.
 				#
 				scm = MockScm.new(:commits => [Scm::Commit.new(:token => 1)])
-				import = Import.new.run(scm)
-				import = Import.find(import.id) # A very brute-force reload, since reload doesn't clear everything
+				import = CommitTask.new.run(scm)
+				import = CommitTask.find(import.id) # A very brute-force reload, since reload doesn't clear everything
 				assert_equal "OK", import.status
 				assert_equal Commit.find_by_token(1), import.head
 				assert_equal [nil], scm.commit_requests
@@ -32,8 +32,8 @@ module Ohdb
 				# Two commits, including one we've already seen. Should not result in a duplicate.
 				#
 				scm = MockScm.new(:commits => [Scm::Commit.new(:token => 1), Scm::Commit.new(:token => 2)])
-				import = Import.new.run(scm)
-				import = Import.find(import.id) # A very brute-force reload, since reload doesn't clear everything
+				import = CommitTask.new.run(scm)
+				import = CommitTask.find(import.id) # A very brute-force reload, since reload doesn't clear everything
 				assert_equal "OK", import.status
 				assert_equal Commit.find_by_token(2), import.head
 				assert_equal 2, Commit.count
@@ -45,8 +45,8 @@ module Ohdb
 				# Multiple commits, but we've already seen all of them.
 				#
 				scm = MockScm.new(:commits => [Scm::Commit.new(:token => 1), Scm::Commit.new(:token => 2)])
-				import = Import.new.run(scm)
-				import = Import.find(import.id) # A very brute-force reload, since reload doesn't clear everything
+				import = CommitTask.new.run(scm)
+				import = CommitTask.find(import.id) # A very brute-force reload, since reload doesn't clear everything
 				assert_equal "OK", import.status
 				assert_equal Commit.find_by_token(2), import.head
 				assert_equal 2, Commit.count

@@ -66,6 +66,7 @@ require 'rdoc/usage'
 require 'ostruct'
 
 require File.join(File.dirname(__FILE__), '../lib/ohdb')
+include Ohdb
 
 class App
 	attr_accessor :options
@@ -130,23 +131,34 @@ class App
 			unless FileTest.exist?(@options.output) || options.quiet
 				puts "Creating database #{@options.output}"
 			end
-			Ohdb::Database.create(@options.output)
+			Database.create(@options.output)
 
-			last_import = Ohdb::Import.first(:order => "updated_at DESC", :conditions => "status='OK'")
-
-			if last_import && last_import.head && last_import.head.token == scm.head_token
+			if scm.head_token == LocDeltaTask.most_recent_token
 				puts "Already up-to-date." unless @options.quiet
 			else
-				puts "Last successful update: #{last_import.updated_at.local}" if last_import && options.verbose
+				puts "Last successful update: #{LocDeltaTask.most_recent.updated_at}" if LocDeltaTask.most_recent && options.verbose
+
 				count = 0
-				import = Ohdb::Import.new.run(scm) do |commit|
-					puts commit.token	if @options.verbose
+				commit_task = CommitTask.new.run(scm) do |commit|
+					puts "Adding commit #{commit.token}" if @options.verbose
 					count += 1
 				end
-				if import.status == "OK"
+				if commit_task.status == "OK"
 					puts "Successfully added #{count} new commit(s)." unless options.quiet
 				else
-					STDERR.puts "#{import.status}: #{import.message}"
+					STDERR.puts "#{commit_task.status}: #{commit_task.message}"
+					exit 1
+				end
+
+				count = 0
+				loc_delta_task = LocDeltaTask.new.run(scm) do |commit|
+					puts "Counting commit #{commit.token}" if @options.verbose
+					count += 1
+				end
+				if loc_delta_task.status == "OK"
+					puts "Successfully counted #{count} new commit(s)." unless options.quiet
+				else
+					STDERR.puts "#{loc_delta_task.status}: #{loc_delta_task.message}"
 					exit 1
 				end
 			end
