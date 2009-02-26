@@ -14,20 +14,31 @@
 #   can be interrupted and restarted with minimal lost work.
 #
 # == Examples
-#   Analyze all commits in repository ~/projects/foo, and place the results
-#   in database foo.sqlite3:
+#   Analyze all commits in the repository based in the current directory,
+#   and store the results in database ./.ohloh/commits.sqlite3:
 #
-#       ohdb -o foo.sqlite3 ~/projects/foo
+#       ohdb make
 #
-#   Analyze the repository rooted at the current directory, and place
-#   the results in a database with default name .ohloh/commits.sqlite3
+#   Display a report of monthly activity in the repository:
 #
-#       ohdb
+#       ohdb activity --group-by=month
 #
 # == Usage
 #   ohdb [options] [command]
+#   Available commands: init, make, status, activity, help
 #
-#   For help use: ohdb help
+# == Commands
+#
+#    init                 Initialize a new, empty database. Does nothing if a
+#                         database already exists.
+#
+#    make                 Update the database to include all commits.
+#
+#    status               Display the status of the database.
+#
+#    activity             Display a report of development activity, based on
+#                         data stored in the database. This report can be
+#                         grouped by language, month, or name.
 #
 # == Global Options
 #
@@ -35,20 +46,10 @@
 #                             Defalts to the current directory.
 #
 #   -o, --output <path>   Specify the filename for the commit database.
-#                         If the target directory does not exist, it will be created.
-#
-#                         By default, The database is stored in a hidden
-#                         directory to prevent detection by the surrounding
-#                         source control system.
-#
-#                         A directory named ".ohloh" will be created, and the
-#                         the database will be stored within this directory
-#                         with name "commits.sqlite3".
-#
-#                         For example, if a Git repository is stored at
-#                              ~/project/.git/
-#                         then the database file will be created at
-#                              ~/project/.ohloh/commits.sqlite3.
+#                         If the path does not exist, it will be created.
+#                         By default, the database is stored in a hidden
+#                         directory name ".ohloh" within the repository
+#                         directory.
 #
 #   -b, --branch <name>   Process the specified branch. Only commits that are
 #                         ancestors of this branch will appear in the database.
@@ -56,6 +57,9 @@
 #                         Do not mix and match branches within a single database!
 #                         If you want statistics for multiple branches, you
 #                         must build a separate database for each branch.
+#
+#   -g, --group-by [language|name|month|year|l|n|m|y]
+#                         Applies to the 'activity' reporting command only.
 #
 #   -V, --verbose         Verbose output
 #   -q, --quiet           Output as little as possible. Overrides verbose.
@@ -92,6 +96,8 @@ class App
 				opts.on('-b BRANCH', '--branch BRANCH') { |b| @options.branch_name = b }
 				opts.on('-o OUTPUT', '--output OUTPUT') { |o| @options.output = o }
 
+				opts.on('-g GROUP', '--group-by GROUP') { |g| @options.group_by = g }
+
 				opts.on('-V', '--verbose')     { @options.verbose = true }
 				opts.on('-q', '--quiet')       { @options.quiet = true }
 				opts.on('-?', '-h', '--help')  { output_help }
@@ -104,7 +110,10 @@ class App
 			@options.verbose = false if @options.quiet
 			@options.command = args.pop
 
-			# output_options
+			if @options.command == "help"
+				output_help
+				exit 0
+			end
     end
 
 		def output_options
@@ -116,7 +125,6 @@ class App
 		end
 
 		def output_help
-			output_version
 			RDoc::usage()
 		end
 
