@@ -6,8 +6,8 @@ module Ohdb::Commands
 			puts
 			puts "Total Activity By Language".center(90)
 			puts
-			puts "---------------   ------- Code --------   ------ Comments -----   ------ Blanks -------"                  
-			puts "Language              Added     Removed      Added     Removed      Added     Removed"
+			puts "---------------   ------- Code --------   ----- Comments ------   ------ Blanks -------"
+			puts "Language              Added     Removed      Added     Removed        Added     Removed"
 			puts "---------------   ---------  ----------   ---------  ----------   ---------  ----------"
 
 			rows = ActiveRecord::Base.connection.select_all <<-SQL
@@ -20,7 +20,7 @@ module Ohdb::Commands
 			sum(blanks_removed) as blanks_removed
 			from loc_deltas group by language order by language;
 			SQL
-			
+
 			rows.each { |r| write_row r }
 		end
 

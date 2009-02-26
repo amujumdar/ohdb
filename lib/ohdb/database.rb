@@ -7,7 +7,7 @@ module Ohdb
 		end
 
 		def self.dbconfig(filename)
-			{:adapter => 'sqlite3', :dbfile => filename}
+			{:adapter => 'sqlite3', :dbfile => filename, :timeout => 5000}
 		end
 
 		def self.establish_connection(filename)

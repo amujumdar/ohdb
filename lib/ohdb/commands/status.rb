@@ -3,24 +3,19 @@ module Ohdb::Commands
 		def run
 			connect_db
 
-			commits_in_db = Ohdb::Commit.count
-			puts "Total commits in database:  #{commits_in_db.to_s.rjust(6,' ')}  (#{how_far_behind(CommitTask)})"
+			total_commits = CommitTask.most_recent_position + scm.commit_count(CommitTask.most_recent_token)
 
-			counted_commits_in_db = Ohdb::Commit.count(:conditions => 'id in (select commit_id from loc_deltas)')
-			puts "          Counted commits:  #{counted_commits_in_db.to_s.rjust(6,' ')}  (#{how_far_behind(LocDeltaTask)})"
-
-			puts "Last successful update: #{LocDeltaTask.most_recent.updated_at.localtime}" if LocDeltaTask.most_recent
+			[CommitTask, LocDeltaTask].each do |type|
+				label = type.to_s.gsub("Ohdb::",'').gsub("Task","") + "s"
+				puts "#{label.ljust(12)} head=#{(type.most_recent_token || 'null').rjust(6)} #{type.most_recent_position.to_i.to_s.rjust(6)} commits (#{how_far_behind(total_commits, type)}) #{type.most_recent.status.to_s} #{type.most_recent.message.to_s}"
+			end
 		end
 
-		def how_far_behind(task_class)
-			if task_class.most_recent_token
-				if task_class.most_recent_token == scm.head_token
-					"up-to-date"
-				else
-					"#{scm.commit_count(task_class.most_recent_token)} behind"
-				end
+		def how_far_behind(total_commits, type)
+			if type.most_recent_position == total_commits
+				"up-to-date"
 			else
-				"#{scm.commit_count} behind"
+				"#{total_commits - type.most_recent_position.to_i} behind"
 			end
 		end
 

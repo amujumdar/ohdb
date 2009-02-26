@@ -16,6 +16,10 @@ module Ohdb
 			def most_recent_token
 				most_recent_head && most_recent_head.token
 			end
+
+			def most_recent_position
+				most_recent_head && most_recent_head.position
+			end
 		end
 	end
 end
