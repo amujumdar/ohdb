@@ -25,14 +25,14 @@
 #       ohdb
 #
 # == Usage
-#   ohdb [options] [path]
+#   ohdb [options] [command]
 #
-#   You may pass a local path to a git, hg, or svn repository.  If no path is
-#   provided, the current working directory will be used.
+#   For help use: ohdb help
 #
-#   For help use: ohdb --help
+# == Global Options
 #
-# == Options
+#   -r, --repository <path>   Specify the path to the source control repository.
+#                             Defalts to the current directory.
 #
 #   -o, --output <path>   Specify the filename for the commit database.
 #                         If the target directory does not exist, it will be created.
@@ -88,8 +88,9 @@ class App
 			@options = OpenStruct.new
 			OptionParser.new do |opts|
 
-				opts.on('-b BRANCH', '--branch BRANCH')    { |b| @options.branch_name = b }
-				opts.on('-o OUTPUT', '--output OUTPUT')    { |o| @options.output = o }
+				opts.on('-r REPO', '--repository REPO') { |r| @options.path = r }
+				opts.on('-b BRANCH', '--branch BRANCH') { |b| @options.branch_name = b }
+				opts.on('-o OUTPUT', '--output OUTPUT') { |o| @options.output = o }
 
 				opts.on('-V', '--verbose')     { @options.verbose = true }
 				opts.on('-q', '--quiet')       { @options.quiet = true }
@@ -98,10 +99,12 @@ class App
 				opts.parse!(args) rescue output_usage
 			end
 
-			@options.path = File.expand_path(args.pop || Dir.pwd)
+			@options.path ||= Dir.pwd
 			@options.output ||= File.join(@options.path, ".ohloh/commits.sqlite3")
-
 			@options.verbose = false if @options.quiet
+			@options.command = args.pop
+
+			# output_options
     end
 
 		def output_options
@@ -122,63 +125,10 @@ class App
 		end
 
 		def process_command
-			scm # Make sure the scm exists before doing anything else
-
-			FileUtils.mkdir_p(File.dirname(@options.output)) unless FileTest.directory?(File.dirname(@options.output))
-			ActiveRecord::Base.logger = Logger.new(File.open(@options.output + ".log", 'a'))
-			Scm::Adapters::AbstractAdapter.logger = ActiveRecord::Base.logger
-
-			unless FileTest.exist?(@options.output) || options.quiet
-				puts "Creating database #{@options.output}"
-			end
-			Database.create(@options.output)
-
-			if scm.head_token == LocDeltaTask.most_recent_token
-				puts "Already up-to-date." unless @options.quiet
-			else
-				puts "Last successful update: #{LocDeltaTask.most_recent.updated_at}" if LocDeltaTask.most_recent && options.verbose
-
-				count = 0
-				commit_task = CommitTask.new.run(scm) do |commit|
-					puts "Adding commit #{commit.token}" if @options.verbose
-					count += 1
-				end
-				if commit_task.status == "OK"
-					puts "Successfully added #{count} new commit(s)." unless options.quiet
-				else
-					STDERR.puts "#{commit_task.status}: #{commit_task.message}"
-					exit 1
-				end
-
-				count = 0
-				loc_delta_task = LocDeltaTask.new.run(scm) do |commit|
-					puts "Counting commit #{commit.token}" if @options.verbose
-					count += 1
-				end
-				if loc_delta_task.status == "OK"
-					puts "Successfully counted #{count} new commit(s)." unless options.quiet
-				else
-					STDERR.puts "#{loc_delta_task.status}: #{loc_delta_task.message}"
-					exit 1
-				end
-			end
+			command_class = Ohdb::Commands.const_get(@options.command.capitalize) rescue output_usage
+			command_class.new(@options).run
 		end
 
-		def scm
-			return @scm if @scm
-
-			@scm = Scm::Adapters::Factory.from_path(options.path)
-			unless @scm
-				STDERR.puts "Could not find a source control repository at path '#{options.path}'"
-				exit 1
-			end
-			unless @scm.exists?
-				STDERR.puts "No #{@scm.english_name} repository at path '#{options.path}'"
-				exit 1
-			end
-
-			@scm
-		end
 end
 
 # Create and run the application
