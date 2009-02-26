@@ -8,8 +8,7 @@ module Ohdb
 				c = Commit.find_by_token(scm_commit.token) || Commit.new
 				c.copy_from_scm(scm_commit)
 				c.save!
-				self.update_attributes(:head => c)
-				yield c if block_given?
+				yield c
 			end
 		end
 

@@ -4,10 +4,13 @@ module Ohdb
 
 		include TaskClassMethods
 
-		def run(scm)
+		def run(scm=nil)
 			begin
 				self.update_attributes(:status => "RUNNING", :message => nil, :head => self.class.most_recent_head)
-				do_work(scm) { |c| yield c if block_given? }
+				do_work(scm) do |c|
+					self.update_attributes(:head => c)
+					yield c if block_given?
+				end
 				self.update_attributes(:status => "OK")
 				self
 			rescue

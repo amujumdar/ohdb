@@ -7,6 +7,18 @@ module Ohdb
 			@commit_requests = [] # Tracks calls to the commits() method for testing
 		end
 
+		def commit_tokens(since=nil)
+			tokens = []
+			each_commit(since) { |c| tokens << c.token }
+			tokens
+		end
+
+		def commits(since=nil)
+			commits = []
+			each_commit(since) { |c| commits << c }
+			commits
+		end
+
 		def each_commit(since=nil)
 			@commit_requests << since
 
