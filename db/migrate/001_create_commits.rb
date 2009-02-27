@@ -24,6 +24,11 @@ class CreateCommits < Ohdb::Migration
 
 		add_index :loc_deltas, [:commit_id]
 
+		create_table :months do |t|
+			t.column :date, :datetime
+			t.column :commit_id, :integer
+		end
+
 		create_table :tasks do |t|
 			t.timestamps
 			t.column :type, :string

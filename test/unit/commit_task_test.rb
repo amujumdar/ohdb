@@ -1,9 +1,9 @@
 require File.dirname(__FILE__) + '/../test_helper'
 
 module Ohdb
-	class CommitTaskTaskTest < Ohdb::Test
+	class CommitTaskTest < Ohdb::Test
 
-		def test_import
+		def test_commit_task
 			with_temp_db do
 
 				#

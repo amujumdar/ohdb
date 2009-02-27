@@ -30,10 +30,13 @@ require 'lib/ohdb/database'
 require 'lib/ohdb/migration'
 require 'lib/ohdb/commit'
 require 'lib/ohdb/loc_delta'
+require 'lib/ohdb/month'
+
 require 'lib/ohdb/task_class_methods'
 require 'lib/ohdb/task'
 require 'lib/ohdb/commit_task'
 require 'lib/ohdb/loc_delta_task'
+require 'lib/ohdb/month_task'
 
 require 'lib/ohdb/commands/base'
 require 'lib/ohdb/commands/init'
