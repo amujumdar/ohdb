@@ -4,7 +4,7 @@ module Ohdb::Commands
 		def run
 			create_db
 
-			task_classes = [CommitTask, LocDeltaTask, MonthTask]
+			task_classes = [CommitTask, LocDeltaTask, MonthTask, LocTask]
 
 			if task_classes.last.most_recent_token == scm.head_token
 				puts "Already up-to-date."

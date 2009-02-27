@@ -21,8 +21,16 @@ class CreateCommits < Ohdb::Migration
 			t.column :blanks_added,     :integer, :null => false, :default => 0
 			t.column :blanks_removed,   :integer, :null => false, :default => 0
 		end
-
 		add_index :loc_deltas, [:commit_id]
+
+		create_table :locs do |t|
+			t.column :commit_id,  :integer, :null => false
+			t.column :language,   :string,  :null => false
+			t.column :code,       :integer, :null => false, :default => 0
+			t.column :comments,   :integer, :null => false, :default => 0
+			t.column :blanks,     :integer, :null => false, :default => 0
+		end
+		add_index :locs, [:commit_id]
 
 		create_table :months do |t|
 			t.column :date, :datetime
