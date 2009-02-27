@@ -25,7 +25,7 @@
 #
 # == Usage
 #   ohdb [options] [command]
-#   Available commands: init, make, status, activity, help
+#   Available commands: init, make, status, activity, size, help
 #
 # == Commands
 #
@@ -39,6 +39,9 @@
 #    activity             Display a report of development activity, based on
 #                         data stored in the database. This report can be
 #                         grouped by language, month, or name.
+#
+#    size                 Display a report of the total lines of code
+#                         in the repository by month.
 #
 # == Global Options
 #

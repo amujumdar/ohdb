@@ -26,6 +26,7 @@ class CreateCommits < Ohdb::Migration
 		create_table :locs do |t|
 			t.column :commit_id,  :integer, :null => false
 			t.column :language,   :string,  :null => false
+			t.column :filecount,  :integer, :null => false, :default => 0
 			t.column :code,       :integer, :null => false, :default => 0
 			t.column :comments,   :integer, :null => false, :default => 0
 			t.column :blanks,     :integer, :null => false, :default => 0

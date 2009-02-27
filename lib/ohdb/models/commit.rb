@@ -2,6 +2,7 @@ module Ohdb
 	class Commit < ActiveRecord::Base
 		acts_as_list
 		has_many :loc_deltas
+		has_many :locs
 
 		# Given an Scm::Commit, build a new Ohdb::Commit object
 		def self.from_scm(scm_commit)
