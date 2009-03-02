@@ -1,9 +1,11 @@
 module Ohdb
 	class MockScm
 		attr_accessor :commit_requests
+		attr_accessor :files
 
 		def initialize(opts={})
 			@commits = opts[:commits] || []
+			@files = opts[:files] || {}
 			@commit_requests = [] # Tracks calls to the commits() method for testing
 		end
 
@@ -31,6 +33,12 @@ module Ohdb
 
 			current.each do |c|
 				yield c if block_given?
+			end
+		end
+
+		def export(dir, token='ignored')
+			@files.keys.each do |key|
+				File.open(File.join(dir,key), 'w') { |f| f.write(@files[key]) }
 			end
 		end
 	end

@@ -33,6 +33,19 @@ class CreateCommits < Ohdb::Migration
 		end
 		add_index :locs, [:commit_id]
 
+		create_table :licenses do |t|
+			t.column :commit_id, :integer, :null => false
+			t.column :name,      :string,  :null => false
+			t.column :path,      :string
+		end
+		add_index :licenses, [:commit_id]
+
+		create_table :platforms do |t|
+			t.column :commit_id, :integer, :null => false
+			t.column :name,      :string,  :null => false
+		end
+		add_index :platforms, [:commit_id]
+
 		create_table :months do |t|
 			t.column :date, :datetime
 			t.column :commit_id, :integer

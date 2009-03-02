@@ -3,6 +3,8 @@ module Ohdb
 		acts_as_list
 		has_many :loc_deltas
 		has_many :locs
+		has_many :licenses
+		has_many :platforms
 
 		# Given an Scm::Commit, build a new Ohdb::Commit object
 		def self.from_scm(scm_commit)

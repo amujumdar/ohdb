@@ -4,7 +4,7 @@ module Ohdb
 		include TaskClassMethods
 
 		def start_message
-			"Counting lines of code in each commit..."
+			"Counting lines of code changed in each commit..."
 		end
 
 		def do_work(scm)

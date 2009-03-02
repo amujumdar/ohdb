@@ -1,5 +1,5 @@
 module Ohdb
-	class LocTask < Task
+	class LocTask < MonthlyTask
 
 		include TaskClassMethods
 
@@ -7,16 +7,7 @@ module Ohdb
 			"Counting total lines of code in each month..."
 		end
 
-		def do_work(scm)
-			start_date = (LocTask.most_recent_head || Commit.first).date
-			Month.months_between(start_date, Time.now.utc).each do |mm|
-				month = Month.find_by_date(mm)
-				create_locs(scm, month.commit) unless month.commit == self.head
-				yield month.commit
-			end
-		end
-
-		def create_locs(scm, commit)
+		def do_commit(scm, commit)
 			Ohcount::ScratchDir.new do |dir|
 				scm.export(dir, commit.token)
 				source_file_list = Ohcount::SourceFileList.new(:paths => [dir])

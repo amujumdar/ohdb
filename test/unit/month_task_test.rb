@@ -47,11 +47,5 @@ module Ohdb
 			end
 		end
 
-		def assert_task_ok(t)
-			assert_equal "OK", t.status
-			assert_equal nil, t.message
-			assert t.updated_at >= t.created_at
-		end
-
 	end
 end
