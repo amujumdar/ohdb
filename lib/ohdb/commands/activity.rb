@@ -2,49 +2,47 @@ module Ohdb::Commands
 	class Activity < Base
 		def run
 			connect_db
+			report = Ohdb::ActivityReport.new(options)
+			rows = report.select_all
+			write_header(report)
+			rows.each { |r| write_row(report, r) }
+		end
 
-			label, select = case options.group_by.to_s.downcase
-			when 'l','language'
-				['language', 'language']
-			when 'n','name'
-				['name','commits.name']
-			when 'y','year'
-				['month',"strftime('%Y', commits.date)"]
-			when 'm','month'
-				['month',"date(commits.date, 'start of month')"]
+		def write_header(report)
+			puts
+			puts report.title.center(73 + report.columns.size * 27)
+			puts "As of #{report.head.date.strftime('%Y-%m-%d %H:%M:%S')}Z".center(73 + report.columns.size * 27)
+			puts
+
+			report.columns.each do
+				STDOUT.write "-------------------------  "
 			end
+			puts "-------  ------- Code -------  ----- Comments -----  ------ Blanks ------"
 
-			rows = ActiveRecord::Base.connection.select_all <<-SQL
-			select
-			#{ select ? select+' as '+label+',' : ''}
-			count(distinct(commit_id)) as commits,
-			sum(code_added) as code_added,
-			sum(code_removed) as code_removed,
-			sum(comments_added) as comments_added,
-			sum(comments_removed) as comments_removed,
-			sum(blanks_added) as blanks_added,
-			sum(blanks_removed) as blanks_removed
-			from loc_deltas
-			inner join commits on loc_deltas.commit_id = commits.id
-			#{ select ? 'group by '+select+' order by '+select : '' }
-			SQL
+			report.columns.each do |col|
+				STDOUT.write "#{col.to_s.capitalize.ljust(25)}  "
+			end
+			puts "Commits      Added    Removed      Added    Removed      Added    Removed"
 
-			write_header(label)
-			rows.each { |r| write_row(label, r) }
+			report.columns.each do
+				STDOUT.write "-------------------------  "
+			end
+			puts "-------  ---------  ---------  ---------  ---------  ---------  ---------"
 		end
 
-		def write_header(label)
+		def write_row(report, r)
+			report.columns.each do |col|
+				STDOUT.write r[col].to_s.ljust(27)
+			end
+			STDOUT.write r['commits'].to_s.rjust(7)
+			STDOUT.write r['code_added'].to_s.rjust(11)
+			STDOUT.write r['code_removed'].to_s.rjust(11)
+			STDOUT.write r['comments_added'].to_s.rjust(11)
+			STDOUT.write r['comments_removed'].to_s.rjust(11)
+			STDOUT.write r['blanks_added'].to_s.rjust(11)
+			STDOUT.write r['blanks_removed'].to_s.rjust(11)
 			puts
-			puts "Total Activity#{ label ? ' By ' + label.capitalize : ''}".center(100)
-			puts
-			puts "-------------------------  -------  ------- Code -------  ----- Comments -----  ------ Blanks ------"
-			puts "#{label.to_s.capitalize.ljust(25)}  Commits      Added    Removed      Added    Removed      Added    Removed"
-			puts "-------------------------  -------  ---------  ---------  ---------  ---------  ---------  ---------"
 		end
 
-
-		def write_row(label, r)
-			puts "#{(label ? r[label] : 'Total').ljust(25)}#{r['commits'].rjust(9)}#{r['code_added'].rjust(11)}#{r['code_removed'].rjust(11)}#{r['comments_added'].rjust(11)}#{r['comments_removed'].rjust(11)}#{r['blanks_added'].rjust(11)}#{r['blanks_removed'].rjust(11)}"
-		end
 	end
 end

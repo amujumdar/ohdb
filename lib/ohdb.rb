@@ -28,6 +28,7 @@ require 'vendor/plugins/acts_as_list/init'
 
 require 'lib/ohdb/database'
 require 'lib/ohdb/migration'
+require 'lib/ohdb/activity_report'
 
 require 'lib/ohdb/models/commit'
 require 'lib/ohdb/models/loc_delta'

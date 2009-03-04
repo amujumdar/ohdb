@@ -61,12 +61,24 @@
 #                         If you want statistics for multiple branches, you
 #                         must build a separate database for each branch.
 #
-#   -g, --group-by [language|name|month|year|l|n|m|y]
-#                         Applies to the 'activity' reporting command only.
-#
 #   -V, --verbose         Verbose output
 #   -q, --quiet           Output as little as possible. Overrides verbose.
 #   -?, -h, --help        Displays this help message
+#
+# == Activity Command Options
+#
+#   -g, --group-by [language|name|month|year|l|n|m|y]
+#                         Group results by language, name, month, or year.
+#                         You may specify this option more than once.
+#
+#   -m, --month <month>   Return only results for the given month.
+#
+#   -n, --name <name>     Return only results for the given author name.
+#
+#   -y, --year <year>     Return only results for the given year.
+#
+#   -l, --language <lang> Return only results for the given language.
+#
 
 require 'optparse'
 require 'rdoc/usage'
@@ -93,13 +105,19 @@ class App
 
     def parse_options(args)
 			@options = OpenStruct.new
+			@options.group_by = []
 			OptionParser.new do |opts|
 
 				opts.on('-r REPO', '--repository REPO') { |r| @options.path = r }
 				opts.on('-b BRANCH', '--branch BRANCH') { |b| @options.branch_name = b }
 				opts.on('-o OUTPUT', '--output OUTPUT') { |o| @options.output = o }
 
-				opts.on('-g GROUP', '--group-by GROUP') { |g| @options.group_by = g }
+				opts.on('-g GROUP', '--group-by GROUP') { |g| @options.group_by << g }
+
+				opts.on('-l LANG', '--language LANG')   { |l| @options.language = l }
+				opts.on('-m MONTH', '--month MONTH')    { |m| @options.month = m }
+				opts.on('-y YEAR', '--year YEAR')       { |y| @options.year = y }
+				opts.on('-n NAME', '--name NAME')       { |n| @options.name = n }
 
 				opts.on('-V', '--verbose')     { @options.verbose = true }
 				opts.on('-q', '--quiet')       { @options.quiet = true }
