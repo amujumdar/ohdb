@@ -1,0 +1,46 @@
+# This application has several dependencies, including an obsolete version of Ohcount.
+#
+# You must have:
+# git-1.6.3
+# ruby 1.8.6
+# rake 0.8.7
+# sqlite3 3.6.16
+#
+# You must also have the following ruby gems:
+# activerecord
+# sqlite3
+#
+# Once you have those pieces you can install and run as follows:
+
+cd ~/dev # Or wherever you keep your code...
+
+#
+# Download Ohcount, and rewind it to a very old version (pre C-conversion)
+#
+git clone http://github.com/robinluckey/ohcount.git old_ohcount
+pushd old_ohcount
+git checkout -b old_ohcount 04705507fe2118f37083bb9909a0e2f4d5fa8270
+popd
+
+#
+# Download the Ohloh Source Control Library
+#
+git clone http://github.com/robinluckey/scm.git
+
+#
+# Download this tool!
+#
+git clone http://github.com/robinluckey/ohdb.git
+
+#
+# How to use it to measure a project
+#
+# Suppose that your project's git repository is stored at ~/dev/myproject/
+#
+cd ~/dev/ohdb
+bin/ohdb -r ~/dev/myproject/ init
+bin/ohdb -r ~/dev/myproject/ make # This will take a while
+bin/ohdb -r ~/dev/myproject/ activity --group-by month --group-by name
+
+# You can monitor progress of a 'make' with
+bin/ohdb -r ~/dev/myproject status

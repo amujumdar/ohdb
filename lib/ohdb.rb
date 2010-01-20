@@ -12,7 +12,7 @@ require 'rubygems'
 begin
 	require 'ohcount'
 rescue LoadError
-	require '../ohcount/lib/ohcount'
+	require '../old_ohcount/lib/ohcount'
 end
 
 begin
