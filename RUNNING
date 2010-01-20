@@ -20,12 +20,13 @@ cd ~/dev # Or wherever you keep your code...
 git clone http://github.com/robinluckey/ohcount.git old_ohcount
 pushd old_ohcount
 git checkout -b old_ohcount 04705507fe2118f37083bb9909a0e2f4d5fa8270
+rake # Build the Ohcount binary, run test
 popd
 
 #
 # Download the Ohloh Source Control Library
 #
-git clone http://github.com/robinluckey/scm.git
+git clone http://github.com/robinluckey/ohloh_scm.git scm
 
 #
 # Download this tool!
